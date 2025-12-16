@@ -2,6 +2,7 @@ export type SocialNetwork = {
     name: string
     url: string
     enabled: boolean
+    clicks: number // 👈 NUEVO
 }
 
 export type User = {

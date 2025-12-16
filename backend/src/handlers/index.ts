@@ -7,55 +7,43 @@ import { generateJWT } from '../utils/jwt'
 export const createAccount = async (req: Request, res: Response) => {
     const { email, password } = req.body
 
-    // 1. Verificar si el Email ya existe
     const userExists = await User.findOne({ email })
     if (userExists) {
         const error = new Error('El usuario ya está registrado')
         return res.status(409).json({ error: error.message })
     }
 
-    // 2. Verificar si el Handle ya existe 
-    const handle = slug(req.body.handle, '') // Generamos el slug aquí
+    const handle = slug(req.body.handle, '')
     const handleExists = await User.findOne({ handle })
     if (handleExists) {
         const error = new Error('Nombre de usuario no disponible')
         return res.status(409).json({ error: error.message })
     }
 
-    // 3. Crear el usuario
     const user = new User(req.body)
-    
-    // 4. Asignar el hash y el handle sanitizado
     user.password = await hashPassword(password)
-    user.handle = handle // guardamos el slug!
+    user.handle = handle
 
     await user.save()
-
     res.status(201).send('Registro creado correctamente')
 }
 
 export const login = async (req: Request, res: Response) => {
-    //La validación de errores ya la hizo el middleware handleInputErrors en el router
-
     const { email, password } = req.body
 
-    // 1. Verificar si el usuario existe
     const user = await User.findOne({ email })
     if (!user) {
         const error = new Error('El usuario no existe')
         return res.status(404).json({ error: error.message })
     }
 
-    // 2. Comprobar el password
     const isPasswordCorrect = await checkPassword(password, user.password)
     if (!isPasswordCorrect) {
         const error = new Error('Password incorrecto')
         return res.status(401).json({ error: error.message })
     }
 
-    // 3. Generar Token
     const token = generateJWT({ id: user._id })
-    
     res.send(token)
 }
 
@@ -68,20 +56,17 @@ export const updateProfile = async (req: Request, res: Response) => {
         const { description, links } = req.body
 
         const handle = slug(req.body.handle, '')
-        const handleExists = await User.findOne({handle})
+        const handleExists = await User.findOne({ handle })
 
-        // Validamos si el usuario quiere cambiar su handle y si ya está ocupado
-        // req.user viene del middleware authenticate, si te marca error en .user ignóralo por ahora o reinicia VS Code
-        if(handleExists && handleExists.email !== req.user.email){
-             const error = new Error('Nombre de usuario no disponible')
-             return res.status(409).json({error: error.message})
+        if (handleExists && handleExists.email !== req.user.email) {
+            const error = new Error('Nombre de usuario no disponible')
+            return res.status(409).json({ error: error.message })
         }
 
-        // Actualizamos los datos del usuario logueado
         req.user.description = description
         req.user.handle = handle
         req.user.links = links
-        
+
         await req.user.save()
         res.send('Perfil Actualizado Correctamente')
 
@@ -94,10 +79,11 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const getUserByHandle = async (req: Request, res: Response) => {
     try {
         const { handle } = req.params
-        // Buscamos el usuario y traemos solo los datos públicos (excluyendo password e ID)
-        const user = await User.findOne({handle}).select('-_id -password -email -__v')
 
-        if(!user) {
+        const user = await User.findOne({ handle })
+            .select('-_id -password -email -__v')
+
+        if (!user) {
             const error = new Error('El usuario no existe')
             return res.status(404).json({ error: error.message })
         }
@@ -109,18 +95,17 @@ export const getUserByHandle = async (req: Request, res: Response) => {
     }
 }
 
-// Buscar usuarios por handle (buscador)
 export const searchByHandle = async (req: Request, res: Response) => {
     try {
         const { handle } = req.body
-        // Buscamos usuarios cuyo handle contenga el texto (insensible a mayúsculas)
-        const userExists = await User.find({
-            handle: { $regex: handle, $options: 'i' } 
-        }).select('handle name image -_id') // Solo devolvemos datos públicos
 
-        if(!userExists.length){
+        const userExists = await User.find({
+            handle: { $regex: handle, $options: 'i' }
+        }).select('handle name image -_id')
+
+        if (!userExists.length) {
             const error = new Error('No se encontraron resultados')
-            return res.status(404).json({error: error.message})
+            return res.status(404).json({ error: error.message })
         }
 
         res.json(userExists)
@@ -129,3 +114,36 @@ export const searchByHandle = async (req: Request, res: Response) => {
         return res.status(500).json({ error: error.message })
     }
 }
+
+export const registerLinkClick = async (req: Request, res: Response) => {
+    try {
+        const { handle, linkName } = req.body
+
+        // 1. Buscar usuario
+        const user = await User.findOne({ handle })
+        if (!user) {
+            const error = new Error('Usuario no encontrado')
+            return res.status(404).json({ error: error.message })
+        }
+
+        // 2. Buscar el link
+        const link = user.links.find(link => link.name === linkName && link.enabled)
+        if (!link) {
+            const error = new Error('Link no encontrado o deshabilitado')
+            return res.status(404).json({ error: error.message })
+        }
+
+        // 3. Incrementar contador
+        link.clicks = (link.clicks || 0) + 1
+
+        // 4. Guardar cambios
+        await user.save()
+
+        res.json({ message: 'Click registrado correctamente' })
+
+    } catch (e) {
+        const error = new Error('Error al registrar click')
+        return res.status(500).json({ error: error.message })
+    }
+}
+

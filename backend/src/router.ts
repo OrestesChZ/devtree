@@ -1,15 +1,20 @@
 import { Router } from 'express'
 import { body } from 'express-validator'
-import { createAccount, login, getUser, updateProfile, getUserByHandle, searchByHandle } from './handlers'
+import { 
+    createAccount, 
+    login, 
+    getUser, 
+    updateProfile, 
+    getUserByHandle, 
+    searchByHandle,
+    registerLinkClick // 👈 NUEVO HANDLER
+} from './handlers'
 import { handleInputErrors } from './middleware/validation'
 import { authenticate } from './middleware/auth' 
 
-
 const router = Router()
 
-
-// ... tus rutas de auth/register y auth/login siguen igual ...
-
+// Auth
 router.post('/auth/register', 
     body('handle').notEmpty().withMessage('El handle no puede ir vacío'),
     body('name').notEmpty().withMessage('El nombre no puede ir vacío'),
@@ -26,19 +31,26 @@ router.post('/auth/login',
     login
 )
 
-// Rutas Protegidas
-router.get('/user', authenticate, getUser) 
-
-//nueva ruta 
+// Rutas protegidas
+router.get('/user', authenticate, getUser)
 
 router.patch('/user', 
-    body('handle').notEmpty().withMessage('El handle no puede ir vacío'), // Validamos que al menos envíe el handle
+    body('handle').notEmpty().withMessage('El handle no puede ir vacío'),
     handleInputErrors,
     authenticate, 
     updateProfile
 )
 
-// Ruta Pública 
+// 🔥 NUEVA RUTA: contador de clicks
+router.post(
+    '/link/click',
+    body('handle').notEmpty().withMessage('Handle requerido'),
+    body('linkName').notEmpty().withMessage('Link requerido'),
+    handleInputErrors,
+    registerLinkClick
+)
+
+// Rutas públicas
 router.get('/:handle', getUserByHandle)
 router.post('/search', searchByHandle)
 

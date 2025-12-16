@@ -5,16 +5,17 @@ export interface IUser extends Document {
     name: string
     email: string
     password: string
-    description: string 
-    image: string       
-    links: {            
+    description: string
+    image: string
+    links: {
         name: string
         url: string
         enabled: boolean
+        clicks: number
     }[]
 }
 
-const userSchema = new Schema({
+const userSchema = new Schema<IUser>({
     handle: {
         type: String,
         required: true,
@@ -38,7 +39,7 @@ const userSchema = new Schema({
         required: true,
         trim: true
     },
-    description: { 
+    description: {
         type: String,
         default: ''
     },
@@ -50,8 +51,9 @@ const userSchema = new Schema({
         type: [
             {
                 name: { type: String, required: true },
-                url: { type: String, required: false },
-                enabled: { type: Boolean, default: false }
+                url: { type: String, default: '' },
+                enabled: { type: Boolean, default: false },
+                clicks: { type: Number, default: 0 } 
             }
         ],
         default: []

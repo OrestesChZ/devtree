@@ -78,3 +78,15 @@ export async function searchProfiles(handle: string) {
         throw new Error('Ha ocurrido un error inesperado')
     }
 }
+
+// === CLICK TRACKING ===
+export async function registerLinkClick(handle: string, linkName: string) {
+    try {
+        await api.post('/link/click', {
+            handle,
+            linkName
+        })
+    } catch (error) {
+        console.error('Error registrando click')
+    }
+}

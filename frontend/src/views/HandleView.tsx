@@ -3,6 +3,8 @@ import { useParams, Navigate } from 'react-router-dom'
 import { getUserByHandle } from '../api/DevTreeAPI'
 import type { User } from '../types'
 import { social } from '../data/social'
+import { registerLinkClick } from '../api/DevTreeAPI'
+
 
 export default function HandleView() {
 
@@ -52,12 +54,19 @@ export default function HandleView() {
                                     href={link.url}
                                     target="_blank"
                                     rel="noreferrer noopener"
+                                    onClick={() => registerLinkClick(user.handle, link.name)}
                                     className="bg-white px-5 py-4 flex items-center gap-5 rounded-lg text-slate-800 hover:bg-slate-200 transition-colors"
                                 >
                                     {socialImage && (
                                         <img src={socialImage} alt="icono red social" className="w-12"/>
                                     )}
-                                    <p className="text-black capitalize font-bold text-lg">Visita mi: {link.name}</p>
+                                    <p className="text-black capitalize font-bold text-lg">
+                                        Visita mi: {link.name}
+                                    </p>
+
+                                    <p className="text-sm text-gray-500">
+                                        {link.clicks} visitas
+                                    </p>
                                 </a>
                              )
                         }
