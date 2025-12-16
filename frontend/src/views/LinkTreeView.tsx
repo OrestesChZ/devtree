@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { toast } from 'sonner'
 import { social } from '../data/social'
 import DevTreeInput from '../components/DevTreeInput'
 import { updateProfile } from '../api/DevTreeAPI'
-import { User, SocialNetwork } from '../types'
+import type { User, SocialNetwork } from '../types'
+
 
 export default function LinkTreeView() {
 

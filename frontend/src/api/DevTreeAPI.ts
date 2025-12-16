@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios'
 import api from '../config/axios'
-import { User, RegisterForm, LoginForm } from '../types'
+import type { User, RegisterForm, LoginForm } from '../types'
 
 // === AUTH ===
 

@@ -22,7 +22,8 @@ export default function RegisterView() {
     const handleRegister = async (formData: RegisterForm) => {
         try {
             // Usamos la función centralizada que maneja mejor los errores
-            const data = await registerUser(formData)
+            await registerUser(formData)
+
             
             toast.success('Cuenta creada correctamente. ¡Ahora inicia sesión!')
             reset()

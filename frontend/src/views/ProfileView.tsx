@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form"
 import { useOutletContext } from "react-router-dom"
 import { toast } from "sonner"
 import ErrorMessage from "../components/ErrorMessage"
-import { User, ProfileForm } from "../types" // Asegúrate de tener ProfileForm en types o usa User
+import type { User, ProfileForm } from '../types' // Asegúrate de tener ProfileForm en types o usa User
 import { updateProfile } from "../api/DevTreeAPI"
 
 export default function ProfileView() {

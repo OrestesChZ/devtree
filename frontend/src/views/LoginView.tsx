@@ -19,8 +19,7 @@ export default function LoginView() {
     const handleLogin = async (formData: LoginForm) => {
         try {
             // Usamos la función del servicio API
-            const data = await loginUser(formData) 
-            
+            await loginUser(formData)             
             toast.success('Iniciando sesión...')             
         
             navigate('/admin')

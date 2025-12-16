@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import NavigationTabs from "../components/NavigationTabs";
-import { User } from "../types"; // Importamos el tipo
+import type { User } from '../types';
 import { getUser } from "../api/DevTreeAPI"; // Importamos la función
 
 export default function AppLayout() {

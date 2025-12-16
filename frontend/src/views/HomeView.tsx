@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { searchProfiles } from '../api/DevTreeAPI'
-import { User } from '../types'
+import type { User } from '../types'
 import { toast } from 'sonner'
 
 export default function HomeView() {

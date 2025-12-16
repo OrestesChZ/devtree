@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query' 
-import { toast } from 'sonner'
 import { getUserByHandle } from '../api/DevTreeAPI'
-import { User, SocialNetwork } from '../types'
+import type { User } from '../types'
 import { social } from '../data/social'
 
 export default function HandleView() {
@@ -21,7 +19,7 @@ export default function HandleView() {
                 setUser(data)
                 setLoading(false)
             })
-            .catch(error => {
+            .catch(() => {
                 setError(true)
                 setLoading(false)
             })
