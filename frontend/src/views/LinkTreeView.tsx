@@ -6,29 +6,30 @@ import DevTreeInput from '../components/DevTreeInput'
 import { updateProfile } from '../api/DevTreeAPI'
 import type { User, SocialNetwork } from '../types'
 
-
 export default function LinkTreeView() {
 
-    // 1. Recuperamos el usuario que ya cargó el AppLayout
+    // 1. Usuario cargado desde AppLayout
     const user = useOutletContext<User>()
     
-    // 2. Estado para manejar los links visualmente
-    const [devTreeLinks, setDevTreeLinks] = useState<SocialNetwork[]>(social.map( item => {
-        // Buscamos si el usuario ya tiene este link guardado
-        const existingLink = user.links.find(link => link.name === item.name)
-        
-        // Si existe, usamos sus datos. Si no, creamos uno vacío/deshabilitado.
-        return {
-            name: item.name,
-            url: existingLink ? existingLink.url : '',
-            enabled: existingLink ? existingLink.enabled : false
-        }
-    }))
+    // 2. Estado para manejar los links
+    const [devTreeLinks, setDevTreeLinks] = useState<SocialNetwork[]>(
+        social.map(item => {
+            // Buscar si el usuario ya tiene este link
+            const existingLink = user.links.find(link => link.name === item.name)
+            
+            return {
+                name: item.name,
+                url: existingLink ? existingLink.url : '',
+                enabled: existingLink ? existingLink.enabled : false,
+                clicks: existingLink ? existingLink.clicks : 0 // ✅ FIX CLAVE
+            }
+        })
+    )
 
-    // 3. Manejar cambio en el Input (URL)
+    // 3. Cambio de URL
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const updatedLinks = devTreeLinks.map(link => {
-            if(link.name === e.target.name) {
+            if (link.name === e.target.name) {
                 return { ...link, url: e.target.value }
             }
             return link
@@ -36,10 +37,10 @@ export default function LinkTreeView() {
         setDevTreeLinks(updatedLinks)
     }
 
-    // 4. Manejar el Switch (Habilitar/Deshabilitar)
+    // 4. Habilitar / Deshabilitar link
     const handleEnableLink = (socialNetwork: string) => {
         const updatedLinks = devTreeLinks.map(link => {
-            if(link.name === socialNetwork) {
+            if (link.name === socialNetwork) {
                 return { ...link, enabled: !link.enabled }
             }
             return link
@@ -47,33 +48,30 @@ export default function LinkTreeView() {
         setDevTreeLinks(updatedLinks)
     }
 
-    // 5. Guardar en Base de Datos
+    // 5. Guardar cambios en BD
     const handleSave = async () => {
         try {
-            // Preparamos el objeto completo del usuario actualizado
-            // (Mantenemos handle y description iguales, solo cambiamos links)
-            const updatedUser : User = {
+            const updatedUser: User = {
                 ...user,
                 links: devTreeLinks
             }
 
-            await updateProfile(updatedUser) // Llamada a la API
-            toast.success('Cambios Guardados Correctamente')
+            await updateProfile(updatedUser)
+            toast.success('Cambios guardados correctamente')
         } catch (error) {
             toast.error('Error al guardar los cambios')
         }
     }
 
     return (
-        <div className='space-y-5'>
+        <div className="space-y-5">
             {devTreeLinks.map(item => {
-                // Buscamos la imagen correspondiente en el array estático 'social'
                 const socialItem = social.find(s => s.name === item.name)
-                
+
                 return (
-                    <DevTreeInput 
+                    <DevTreeInput
                         key={item.name}
-                        item={{ ...item, image: socialItem?.image || '' }} // Pasamos la imagen
+                        item={{ ...item, image: socialItem?.image || '' }}
                         handleUrlChange={handleUrlChange}
                         handleEnableLink={handleEnableLink}
                     />
@@ -81,9 +79,11 @@ export default function LinkTreeView() {
             })}
 
             <button
-                className='bg-cyan-400 p-2 text-lg w-full uppercase text-slate-600 rounded font-bold hover:bg-cyan-500 transition-colors'
+                className="bg-cyan-400 p-2 text-lg w-full uppercase text-slate-600 rounded font-bold hover:bg-cyan-500 transition-colors"
                 onClick={handleSave}
-            >Guardar Cambios</button>
+            >
+                Guardar Cambios
+            </button>
         </div>
     )
 }
