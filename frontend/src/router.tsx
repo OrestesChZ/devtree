@@ -7,35 +7,33 @@ import LinkTreeView from "./views/LinkTreeView";
 import ProfileView from "./views/ProfileView";
 import HandleView from "./views/HandleView";
 import HomeView from "./views/HomeView";
-import ActivityView from './views/ActivityView'
+import ActivityView from './views/ActivityView';
 
-
-export default function Router(){
-    return(
+export default function Router() {
+    return (
         <BrowserRouter>
             <Routes>
 
                 <Route path='/' element={<HomeView />} />
-                
-                <Route element={<AuthLayout/>}>                    
-                    <Route path='/auth/login' element={<LoginView/>}/>
-                    <Route path='/auth/register' element={<RegisterView/>}/>
+
+                <Route element={<AuthLayout />}>
+                    <Route path='/auth/login' element={<LoginView />} />
+                    <Route path='/auth/register' element={<RegisterView />} />
                 </Route>
 
-                <Route path='/admin' element={<AppLayout/>}>
-                    <Route index={true} element={<LinkTreeView/>}></Route>
-                    <Route path='profile' element={<ProfileView/>}></Route>
+                {/* 🔐 ADMIN */}
+                <Route path='/admin' element={<AppLayout />}>
+                    <Route index element={<LinkTreeView />} />
+                    <Route path='profile' element={<ProfileView />} />
+                    <Route path='activity' element={<ActivityView />} /> {/* ✅ AQUÍ */}
                 </Route>
 
-                {/* Ruta Pública para ver perfiles  */}
-                <Route path='/:handle' element={<AuthLayout/>}>
-                    <Route element={<HandleView/>} index={true}/>
+                {/* 🌍 PERFIL PÚBLICO */}
+                <Route path='/:handle' element={<AuthLayout />}>
+                    <Route index element={<HandleView />} />
                 </Route>
-
-                <Route path="activity" element={<ActivityView />} />
-
 
             </Routes>
         </BrowserRouter>
-    )
+    );
 }
