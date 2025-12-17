@@ -7,6 +7,8 @@ import LinkTreeView from "./views/LinkTreeView";
 import ProfileView from "./views/ProfileView";
 import HandleView from "./views/HandleView";
 import HomeView from "./views/HomeView";
+import ActivityView from './views/ActivityView'
+
 
 export default function Router(){
     return(
@@ -29,6 +31,9 @@ export default function Router(){
                 <Route path='/:handle' element={<AuthLayout/>}>
                     <Route element={<HandleView/>} index={true}/>
                 </Route>
+
+                <Route path="activity" element={<ActivityView />} />
+
 
             </Routes>
         </BrowserRouter>

@@ -1,9 +1,14 @@
-import { BookmarkSquareIcon, UserIcon } from '@heroicons/react/20/solid'
+import {
+    BookmarkSquareIcon,
+    UserIcon,
+    ClockIcon
+} from '@heroicons/react/20/solid'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const tabs = [
     { name: 'Links', href: '/admin', icon: BookmarkSquareIcon },
     { name: 'Mi Perfil', href: '/admin/profile', icon: UserIcon },
+    { name: 'Actividad', href: '/admin/activity', icon: ClockIcon },
 ]
 
 function classNames(...classes: string[]) {
@@ -19,7 +24,8 @@ export default function NavigationTabs() {
     }
 
     return (
-        <div className='mb-5'>
+        <div className="mb-5">
+            {/* MOBILE */}
             <div className="sm:hidden">
                 <label htmlFor="tabs" className="sr-only">
                     Select a tab
@@ -28,21 +34,25 @@ export default function NavigationTabs() {
                     id="tabs"
                     name="tabs"
                     className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    onChange={ handleChange }
+                    value={location.pathname}
+                    onChange={handleChange}
                 >
-                    {tabs.map((tab) => (
-                        <option 
-                            value={tab.href}
+                    {tabs.map(tab => (
+                        <option
                             key={tab.name}
-                        >{tab.name}</option>
+                            value={tab.href}
+                        >
+                            {tab.name}
+                        </option>
                     ))}
                 </select>
             </div>
 
+            {/* DESKTOP */}
             <div className="hidden sm:block">
                 <div className="border-b border-gray-200">
                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                        {tabs.map((tab) => (
+                        {tabs.map(tab => (
                             <Link
                                 key={tab.name}
                                 to={tab.href}
@@ -50,12 +60,14 @@ export default function NavigationTabs() {
                                     location.pathname === tab.href
                                         ? 'border-blue-500 text-blue-500'
                                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                                    'group inline-flex items-center border-b-2 py-4 px-1 text-xl'
+                                    'group inline-flex items-center border-b-2 py-4 px-1 text-xl font-medium'
                                 )}
                             >
                                 <tab.icon
                                     className={classNames(
-                                        location.pathname === tab.href ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500',
+                                        location.pathname === tab.href
+                                            ? 'text-blue-500'
+                                            : 'text-gray-400 group-hover:text-gray-500',
                                         '-ml-0.5 mr-2 h-5 w-5'
                                     )}
                                     aria-hidden="true"

@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios'
 import api from '../config/axios'
-import type { User, RegisterForm, LoginForm } from '../types'
+import type { User, RegisterForm, LoginForm, ActivityLog } from '../types'
 
 // === AUTH ===
 
@@ -88,5 +88,19 @@ export async function registerLinkClick(handle: string, linkName: string) {
         })
     } catch (error) {
         console.error('Error registrando click')
+    }
+}
+
+// === LOGS ===
+
+export async function getActivityLog() {
+    try {
+        const { data } = await api.get<ActivityLog[]>('/activity')
+        return data
+    } catch (error) {
+        if (isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.error)
+        }
+        throw new Error('Error obteniendo historial')
     }
 }

@@ -24,3 +24,13 @@ export type LoginForm = Pick<User, 'email'> & {
 }
 
 export type ProfileForm = Pick<User, 'handle' | 'description'>
+
+export type ActivityLog = {
+    _id: string
+    action: 'UPDATE_URL' | 'ENABLE_LINK' | 'DISABLE_LINK'
+    linkName: string
+    oldValue?: string
+    newValue?: string
+    createdAt: string
+}
+
