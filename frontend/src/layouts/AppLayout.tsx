@@ -44,14 +44,21 @@ export default function AppLayout() {
             <header className="bg-slate-800 py-5">
                 <div className="mx-auto max-w-5xl flex flex-col md:flex-row items-center md:justify-between">
                     <div className="w-full p-5 lg:p-0 md:w-1/3">
-                        <img src="/logo.svg" className="w-full block" alt="DevTree Logo" />
+                        <Link to="/">
+                            <img
+                                src="/logo.svg"
+                                className="w-full block cursor-pointer"
+                                alt="DevTree Logo"
+                            />
+                        </Link>
                     </div>
-                    <div className="md:w-1/3 md:flex md:justify-end">
+
+                <   div className="md:w-1/3 md:flex md:justify-end">
                         <button
-                            className=" bg-lime-500 p-2 text-slate-800 uppercase font-black text-xs rounded-lg cursor-pointer"
+                            className="bg-lime-500 p-2 text-slate-800 uppercase font-black text-xs rounded-lg cursor-pointer"
                             onClick={() => {
-                                localStorage.removeItem('AUTH_TOKEN'); // Borrar token
-                                window.location.href = '/auth/login'; // Redirigir forzado
+                                localStorage.removeItem('AUTH_TOKEN')
+                                window.location.href = '/auth/login'
                             }}
                         >
                             Cerrar Sesión
