@@ -7,41 +7,60 @@ import {
     updateProfile, 
     getUserByHandle, 
     searchByHandle,
-    registerLinkClick // 👈 NUEVO HANDLER
+    registerLinkClick,
+    getActivityLog
 } from './handlers'
 import { handleInputErrors } from './middleware/validation'
 import { authenticate } from './middleware/auth' 
 
 const router = Router()
 
+// ==============================
 // Auth
-router.post('/auth/register', 
+// ==============================
+router.post(
+    '/auth/register', 
     body('handle').notEmpty().withMessage('El handle no puede ir vacío'),
     body('name').notEmpty().withMessage('El nombre no puede ir vacío'),
     body('email').isEmail().withMessage('Email no válido'),
-    body('password').isLength({min: 8}).withMessage('El password es muy corto, mínimo 8 caracteres'),
+    body('password')
+        .isLength({ min: 8 })
+        .withMessage('El password es muy corto, mínimo 8 caracteres'),
     handleInputErrors,
     createAccount
 )
 
-router.post('/auth/login', 
+router.post(
+    '/auth/login', 
     body('email').isEmail().withMessage('Email no válido'),
-    body('password').notEmpty().withMessage('El password es muy corto, mínimo 8 caracteres'),
+    body('password').notEmpty().withMessage('El password es requerido'),
     handleInputErrors,
     login
 )
 
+// ==============================
 // Rutas protegidas
+// ==============================
 router.get('/user', authenticate, getUser)
 
-router.patch('/user', 
+router.patch(
+    '/user', 
     body('handle').notEmpty().withMessage('El handle no puede ir vacío'),
     handleInputErrors,
     authenticate, 
     updateProfile
 )
 
-// 🔥 NUEVA RUTA: contador de clicks
+// 🔥 NUEVA RUTA: historial de actividad
+router.get(
+    '/activity',
+    authenticate,
+    getActivityLog
+)
+
+// ==============================
+// Clicks en links (público)
+// ==============================
 router.post(
     '/link/click',
     body('handle').notEmpty().withMessage('Handle requerido'),
@@ -50,7 +69,9 @@ router.post(
     registerLinkClick
 )
 
+// ==============================
 // Rutas públicas
+// ==============================
 router.get('/:handle', getUserByHandle)
 router.post('/search', searchByHandle)
 

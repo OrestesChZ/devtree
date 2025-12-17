@@ -1,23 +1,26 @@
 import { Request, Response } from 'express'
 import User from "../models/User"
+import ActivityLog from '../models/ActivityLog'
 import { checkPassword, hashPassword } from '../utils/auth'
 import slug from 'slug'
 import { generateJWT } from '../utils/jwt'
+
+// =======================
+// AUTH
+// =======================
 
 export const createAccount = async (req: Request, res: Response) => {
     const { email, password } = req.body
 
     const userExists = await User.findOne({ email })
     if (userExists) {
-        const error = new Error('El usuario ya está registrado')
-        return res.status(409).json({ error: error.message })
+        return res.status(409).json({ error: 'El usuario ya está registrado' })
     }
 
     const handle = slug(req.body.handle, '')
     const handleExists = await User.findOne({ handle })
     if (handleExists) {
-        const error = new Error('Nombre de usuario no disponible')
-        return res.status(409).json({ error: error.message })
+        return res.status(409).json({ error: 'Nombre de usuario no disponible' })
     }
 
     const user = new User(req.body)
@@ -33,19 +36,21 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await User.findOne({ email })
     if (!user) {
-        const error = new Error('El usuario no existe')
-        return res.status(404).json({ error: error.message })
+        return res.status(404).json({ error: 'El usuario no existe' })
     }
 
     const isPasswordCorrect = await checkPassword(password, user.password)
     if (!isPasswordCorrect) {
-        const error = new Error('Password incorrecto')
-        return res.status(401).json({ error: error.message })
+        return res.status(401).json({ error: 'Password incorrecto' })
     }
 
     const token = generateJWT({ id: user._id })
     res.send(token)
 }
+
+// =======================
+// USER
+// =======================
 
 export const getUser = async (req: Request, res: Response) => {
     res.json(req.user)
@@ -59,10 +64,39 @@ export const updateProfile = async (req: Request, res: Response) => {
         const handleExists = await User.findOne({ handle })
 
         if (handleExists && handleExists.email !== req.user.email) {
-            const error = new Error('Nombre de usuario no disponible')
-            return res.status(409).json({ error: error.message })
+            return res.status(409).json({ error: 'Nombre de usuario no disponible' })
         }
 
+        // 🔥 REGISTRO DE HISTORIAL DE CAMBIOS
+        links.forEach((newLink: any) => {
+            const oldLink = req.user.links.find(
+                (link: any) => link.name === newLink.name
+            )
+
+            if (!oldLink) return
+
+            // Cambio de URL
+            if (oldLink.url !== newLink.url) {
+                ActivityLog.create({
+                    user: req.user._id,
+                    action: 'UPDATE_URL',
+                    linkName: newLink.name,
+                    oldValue: oldLink.url,
+                    newValue: newLink.url
+                })
+            }
+
+            // Activar / Desactivar link
+            if (oldLink.enabled !== newLink.enabled) {
+                ActivityLog.create({
+                    user: req.user._id,
+                    action: newLink.enabled ? 'ENABLE_LINK' : 'DISABLE_LINK',
+                    linkName: newLink.name
+                })
+            }
+        })
+
+        // Actualización normal del perfil
         req.user.description = description
         req.user.handle = handle
         req.user.links = links
@@ -71,10 +105,13 @@ export const updateProfile = async (req: Request, res: Response) => {
         res.send('Perfil Actualizado Correctamente')
 
     } catch (e) {
-        const error = new Error('Hubo un error')
-        return res.status(500).json({ error: error.message })
+        return res.status(500).json({ error: 'Hubo un error' })
     }
 }
+
+// =======================
+// PUBLIC
+// =======================
 
 export const getUserByHandle = async (req: Request, res: Response) => {
     try {
@@ -84,14 +121,12 @@ export const getUserByHandle = async (req: Request, res: Response) => {
             .select('-_id -password -email -__v')
 
         if (!user) {
-            const error = new Error('El usuario no existe')
-            return res.status(404).json({ error: error.message })
+            return res.status(404).json({ error: 'El usuario no existe' })
         }
 
         res.json(user)
     } catch (e) {
-        const error = new Error('Hubo un error')
-        return res.status(500).json({ error: error.message })
+        return res.status(500).json({ error: 'Hubo un error' })
     }
 }
 
@@ -104,46 +139,57 @@ export const searchByHandle = async (req: Request, res: Response) => {
         }).select('handle name image -_id')
 
         if (!userExists.length) {
-            const error = new Error('No se encontraron resultados')
-            return res.status(404).json({ error: error.message })
+            return res.status(404).json({ error: 'No se encontraron resultados' })
         }
 
         res.json(userExists)
     } catch (e) {
-        const error = new Error('Hubo un error')
-        return res.status(500).json({ error: error.message })
+        return res.status(500).json({ error: 'Hubo un error' })
     }
 }
+
+// =======================
+// CLICK TRACKING
+// =======================
 
 export const registerLinkClick = async (req: Request, res: Response) => {
     try {
         const { handle, linkName } = req.body
 
-        // 1. Buscar usuario
         const user = await User.findOne({ handle })
         if (!user) {
-            const error = new Error('Usuario no encontrado')
-            return res.status(404).json({ error: error.message })
+            return res.status(404).json({ error: 'Usuario no encontrado' })
         }
 
-        // 2. Buscar el link
-        const link = user.links.find(link => link.name === linkName && link.enabled)
+        const link = user.links.find(
+            link => link.name === linkName && link.enabled
+        )
+
         if (!link) {
-            const error = new Error('Link no encontrado o deshabilitado')
-            return res.status(404).json({ error: error.message })
+            return res.status(404).json({ error: 'Link no encontrado o deshabilitado' })
         }
 
-        // 3. Incrementar contador
         link.clicks = (link.clicks || 0) + 1
-
-        // 4. Guardar cambios
         await user.save()
 
         res.json({ message: 'Click registrado correctamente' })
-
     } catch (e) {
-        const error = new Error('Error al registrar click')
-        return res.status(500).json({ error: error.message })
+        return res.status(500).json({ error: 'Error al registrar click' })
     }
 }
 
+// =======================
+// ACTIVITY LOG
+// =======================
+
+export const getActivityLog = async (req: Request, res: Response) => {
+    try {
+        const logs = await ActivityLog.find({ user: req.user._id })
+            .sort({ createdAt: -1 })
+            .limit(50)
+
+        res.json(logs)
+    } catch (e) {
+        res.status(500).json({ error: 'Error obteniendo historial' })
+    }
+}
